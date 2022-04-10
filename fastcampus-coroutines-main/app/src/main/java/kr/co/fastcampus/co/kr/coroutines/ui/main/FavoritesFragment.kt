@@ -10,36 +10,28 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kr.co.fastcampus.co.kr.coroutines.databinding.FragmentMainBinding
+import kr.co.fastcampus.co.kr.coroutines.databinding.FragmentFavoritesBinding
 
-class ImageSearchFragment : Fragment() {
+class FavoritesFragment : Fragment() {
 
     private val imageSearchViewModel: ImageSearchViewModel by activityViewModels()
-
-    private val adapter: ImageSearchAdapter = ImageSearchAdapter {
-        imageSearchViewModel.toggle(it)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
 
-        val binding = FragmentMainBinding.inflate(inflater, container, false)
+        val binding = FragmentFavoritesBinding.inflate(inflater, container, false)
         val root = binding.root
 
-        viewLifecycleOwner.lifecycleScope.launch {
-            imageSearchViewModel.pagingDataFlow
-                .collectLatest { items ->
-                    adapter.submitData(items)
-                }
-        }
+        val favoritesAdapter = FavoritesAdapter()
+        binding.recyclerView.adapter = favoritesAdapter
+        binding.recyclerView.layoutManager = GridLayoutManager(context, 3)
 
-        binding.recyclerView.adapter = adapter
-        binding.recyclerView.layoutManager = GridLayoutManager(context, 4)
-        binding.search.setOnClickListener {
-            val query = binding.editText.text.trim().toString()
-            imageSearchViewModel.handleQuery(query)
+        viewLifecycleOwner.lifecycleScope.launch {
+            imageSearchViewModel.favoritesFlow.collectLatest { items ->
+                favoritesAdapter.setItems(items)
+            }
         }
 
         return root
